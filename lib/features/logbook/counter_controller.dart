@@ -1,3 +1,5 @@
+import 'package:shared_preferences/shared_preferences.dart';
+
 class HistoryEntry {
   final String text;
   final String type; // 'add', 'subtract', 'reset'
@@ -7,8 +9,29 @@ class HistoryEntry {
 class CounterController {
   int _counter = 0; //Variabel counter privat
   int _step = 1; //Variabel step privat
-  final List<HistoryEntry> _history =
-      []; //List untuk menyimpan riwayat nilai counter
+
+  final List<HistoryEntry> _history = [];
+  //List untuk menyimpan riwayat nilai counter
+  // Simpan riwayat ke SharedPreferences
+  Future<void> saveHistory() async {
+    final prefs = await SharedPreferences.getInstance();
+    final historyList = _history.map((e) => '${e.text}|${e.type}').toList();
+    await prefs.setStringList('history', historyList);
+  }
+
+  // Muat riwayat dari SharedPreferences
+  Future<void> loadHistory() async {
+    final prefs = await SharedPreferences.getInstance();
+    final historyList = prefs.getStringList('history') ?? [];
+    _history.clear();
+    for (var item in historyList) {
+      final parts = item.split('|');
+      if (parts.length == 2) {
+        _history.add(HistoryEntry(parts[0], parts[1]));
+      }
+    }
+  }
+
   String _twoDigits(int n) =>
       n.toString().padLeft(2, '0'); //Fungsi untuk format dua digit
 
@@ -21,6 +44,10 @@ class CounterController {
     return _history.sublist(0, end);
   }
 
+  void setCounter(int value) {
+    _counter = value;
+  }
+
   // Mengatur nilai step berdasarkan input pengguna
   void setStep(String inputText) {
     int? parsedStep = int.tryParse(inputText);
@@ -31,7 +58,7 @@ class CounterController {
   }
 
   // counter bertambah sebesar step
-  void increment() {
+  Future<void> increment() async {
     _counter = _counter + _step;
     final now = DateTime.now();
     final timeStr = '${_twoDigits(now.hour)}:${_twoDigits(now.minute)}';
@@ -40,9 +67,11 @@ class CounterController {
       'add',
     );
     _history.insert(0, entry);
+    await saveLastValue(_counter);
+    await saveHistory();
   }
 
-  void decrement() {
+  Future<void> decrement() async {
     _counter = _counter - _step;
     final now = DateTime.now();
     final timeStr = '${_twoDigits(now.hour)}:${_twoDigits(now.minute)}';
@@ -51,13 +80,27 @@ class CounterController {
       'subtract',
     );
     _history.insert(0, entry);
+    await saveLastValue(_counter);
+    await saveHistory();
   }
 
-  void reset() {
+  Future<void> reset() async {
     _counter = 0;
     final now = DateTime.now();
     final timeStr = '${_twoDigits(now.hour)}:${_twoDigits(now.minute)}';
     final entry = HistoryEntry('User mereset nilai pada jam $timeStr', 'reset');
     _history.insert(0, entry);
+    await saveLastValue(_counter);
+    await saveHistory();
+  }
+
+  Future<void> saveLastValue(int value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('last_counter', value);
+  }
+
+  Future<int> loadLastValue() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getInt('last_counter') ?? 0;
   }
 }

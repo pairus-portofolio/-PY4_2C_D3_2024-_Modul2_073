@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:logbook_app_073/features/onboarding/onboarding_view.dart';
-import 'counter_controller.dart';
+import 'package:logbook_app_073/features/logbook/counter_controller.dart';
 
 class CounterView extends StatefulWidget {
-
   final String username;
 
   const CounterView({super.key, required this.username});
@@ -13,6 +12,20 @@ class CounterView extends StatefulWidget {
 }
 
 class _CounterViewState extends State<CounterView> {
+  @override
+  void initState() {
+    super.initState();
+    _loadLastValueAndHistory();
+  }
+
+  Future<void> _loadLastValueAndHistory() async {
+    int savedValue = await _controller.loadLastValue();
+    await _controller.loadHistory();
+    setState(() {
+      _controller.setCounter(savedValue);
+    });
+  }
+
   final CounterController _controller = CounterController();
   final TextEditingController _stepController = TextEditingController();
 
@@ -50,27 +63,35 @@ class _CounterViewState extends State<CounterView> {
                 builder: (BuildContext context) {
                   return AlertDialog(
                     title: const Text("Konfirmasi Logout"),
-                    content: const Text("Apakah Anda yakin? Data yang belum disimpan mungkin akan hilang."),
+                    content: const Text(
+                      "Apakah Anda yakin? Data yang belum disimpan mungkin akan hilang.",
+                    ),
                     actions: [
                       // Tombol Batal
                       TextButton(
-                        onPressed: () => Navigator.pop(context), // Menutup dialog saja
+                        onPressed: () =>
+                            Navigator.pop(context), // Menutup dialog saja
                         child: const Text("Batal"),
                       ),
                       // Tombol Ya, Logout
                       TextButton(
                         onPressed: () {
                           // Menutup dialog
-                          Navigator.pop(context); 
-                          
+                          Navigator.pop(context);
+
                           // 2. Navigasi kembali ke Onboarding (Membersihkan Stack)
                           Navigator.pushAndRemoveUntil(
                             context,
-                            MaterialPageRoute(builder: (context) => const OnboardingView()),
+                            MaterialPageRoute(
+                              builder: (context) => const OnboardingView(),
+                            ),
                             (route) => false,
                           );
                         },
-                        child: const Text("Ya, Keluar", style: TextStyle(color: Colors.red)),
+                        child: const Text(
+                          "Ya, Keluar",
+                          style: TextStyle(color: Colors.red),
+                        ),
                       ),
                     ],
                   );
@@ -196,8 +217,8 @@ class _CounterViewState extends State<CounterView> {
                 children: [
                   Expanded(
                     child: ElevatedButton.icon(
-                      onPressed: () {
-                        _controller.decrement();
+                      onPressed: () async {
+                        await _controller.decrement();
                         setState(() {});
                         _showSnackBar(
                           'Berhasil dikurangi → ${_controller.counter}',
@@ -218,8 +239,8 @@ class _CounterViewState extends State<CounterView> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: ElevatedButton.icon(
-                      onPressed: () {
-                        _controller.reset();
+                      onPressed: () async {
+                        await _controller.reset();
                         setState(() {});
                         _showSnackBar('Counter direset');
                       },
@@ -238,8 +259,8 @@ class _CounterViewState extends State<CounterView> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: ElevatedButton.icon(
-                      onPressed: () {
-                        _controller.increment();
+                      onPressed: () async {
+                        await _controller.increment();
                         setState(() {});
                         _showSnackBar(
                           'Berhasil ditambah → ${_controller.counter}',
