@@ -3,7 +3,6 @@ import 'package:logbook_app_073/features/auth/login_controller.dart';
 import 'package:logbook_app_073/features/logbook/counter_view.dart';
 
 class LoginView extends StatefulWidget {
-
   const LoginView({super.key});
 
   @override
@@ -11,6 +10,9 @@ class LoginView extends StatefulWidget {
 }
 
 class _LoginViewState extends State<LoginView> {
+  int failedAttempts = 0;
+  bool buttonDisabled = false;
+  bool _obscurePassword = true;
 
   final LoginController _controller = LoginController();
   final TextEditingController _userController = TextEditingController();
@@ -22,9 +24,7 @@ class _LoginViewState extends State<LoginView> {
 
     if (user.isEmpty || pass.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Username atau Password Harus Diisi"),
-        ),
+        const SnackBar(content: Text("Username atau Password Harus Diisi")),
       );
       return;
     }
@@ -34,16 +34,36 @@ class _LoginViewState extends State<LoginView> {
     if (isSuccess) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(
-          builder: (context) => CounterView(username: user),
-        ),
+        MaterialPageRoute(builder: (context) => CounterView(username: user)),
       );
+      setState(() {
+        failedAttempts = 0;
+      });
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Login Gagal!"),
-        ),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Login Gagal!")));
+      setState(() {
+        failedAttempts++;
+        if (failedAttempts >= 3) {
+          buttonDisabled = true;
+        }
+      });
+      if (failedAttempts >= 3) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              "Terlalu banyak percobaan, coba lagi dalam 10 detik!",
+            ),
+          ),
+        );
+        Future.delayed(const Duration(seconds: 10), () {
+          setState(() {
+            buttonDisabled = false;
+            failedAttempts = 0;
+          });
+        });
+      }
     }
   }
 
@@ -61,12 +81,24 @@ class _LoginViewState extends State<LoginView> {
             ),
             TextField(
               controller: _passController,
-              obscureText: true,
-              decoration: const InputDecoration(labelText: "Password"),
+              obscureText: _obscurePassword,
+              decoration: InputDecoration(
+                labelText: "Password",
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _obscurePassword = !_obscurePassword;
+                    });
+                  },
+                ),
+              ),
             ),
             const SizedBox(height: 20),
             ElevatedButton(
-              onPressed: _handleLogin,
+              onPressed: buttonDisabled ? null : _handleLogin,
               child: const Text("Masuk"),
             ),
           ],
