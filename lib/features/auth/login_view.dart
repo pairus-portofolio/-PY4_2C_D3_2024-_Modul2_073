@@ -70,38 +70,100 @@ class _LoginViewState extends State<LoginView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Login Gatekeeper")),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            TextField(
-              controller: _userController,
-              decoration: const InputDecoration(labelText: "Username"),
-            ),
-            TextField(
-              controller: _passController,
-              obscureText: _obscurePassword,
-              decoration: InputDecoration(
-                labelText: "Password",
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    _obscurePassword ? Icons.visibility_off : Icons.visibility,
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      _obscurePassword = !_obscurePassword;
-                    });
-                  },
+      backgroundColor: const Color(0xFF1976D2),
+      body: Center(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Card(
+              elevation: 10,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(24),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 36),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    CircleAvatar(
+                      radius: 36,
+                      backgroundColor: const Color(0xFF64B5F6),
+                      child: Icon(Icons.lock_outline, size: 40, color: Colors.white),
+                    ),
+                    const SizedBox(height: 18),
+                    const Text(
+                      "Selamat Datang di LogBook!",
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF1976D2),
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      "Silakan login untuk melanjutkan",
+                      style: TextStyle(color: Colors.black54, fontSize: 15),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 28),
+                    TextField(
+                      controller: _userController,
+                      decoration: InputDecoration(
+                        labelText: "Username",
+                        prefixIcon: Icon(Icons.person_outline),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+                    TextField(
+                      controller: _passController,
+                      obscureText: _obscurePassword,
+                      decoration: InputDecoration(
+                        labelText: "Password",
+                        prefixIcon: Icon(Icons.lock_outline),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _obscurePassword = !_obscurePassword;
+                            });
+                          },
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 28),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF1976D2),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        onPressed: buttonDisabled ? null : _handleLogin,
+                        icon: const Icon(Icons.login),
+                        label: const Text(
+                          "Masuk",
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: buttonDisabled ? null : _handleLogin,
-              child: const Text("Masuk"),
-            ),
-          ],
+          ),
         ),
       ),
     );
